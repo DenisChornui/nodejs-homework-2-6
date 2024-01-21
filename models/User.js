@@ -32,7 +32,7 @@ export const userRegisterSchema = Joi.object({
     email: Joi.string().email().required(),
 });
 
-export const userSigninSchema = Joi.object({
+export const userLoginSchema = Joi.object({
   password: Joi.string().required(),
   email: Joi.string().email().required(),
 });
