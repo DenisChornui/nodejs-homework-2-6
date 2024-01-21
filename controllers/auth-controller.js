@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import { HttpError } from "../helpers/index.js";
 import { ctrlWrapper } from "../decorators/index.js";
+import { subscriptionType } from "../models/User.js";
 
 const { JWT_SECRET } = process.env;
 
@@ -68,9 +69,42 @@ const logout = async (req, res) => {
   res.status(204).send();
 };
 
+// const updateSubscription = async (req, res) => {
+//   const { _id } = req.user;
+//   try {
+//     const { subscription } = req.body;
+//     if (!subscriptionType.includes(subscription)) {
+//       throw HttpError(400, "Invalid subscription value");
+//     }
+//     const result = await User.findByIdAndUpdate(_id, { subscription });
+//     if (!result) {
+//       throw HttpError(404, "User not found");
+//     }
+//     res.json(result);
+//   } catch (error) {
+//     res.status(500).json({ message: "Server Error" });
+//   }
+// };
+
+
+export async function updateSubscription(req, res) {
+  const { id: _id } = req.user;
+  const { subscription } = req.body;
+  try {
+    const result = await User.findByIdAndUpdate({ _id }, { subscription });
+    if (!result) {
+      throw HttpError(404);
+    } else {
+      res.json(result);
+    }
+  } catch (error) {
+    next(error);
+  }
+}
 export default {
   register: ctrlWrapper(register),
   login: ctrlWrapper(login),
   getCurrent: ctrlWrapper(getCurrent),
   logout: ctrlWrapper(logout),
+  updateSubscription: ctrlWrapper(updateSubscription),
 };
