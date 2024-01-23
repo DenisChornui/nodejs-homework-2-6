@@ -4,9 +4,14 @@ import {
   authenticate,
   isEmptyBody,
   isValidId,
+  upload,
 } from "../../middlewares/index.js";
 import { validateBody } from "../../decorators/index.js";
-import { userLoginSchema, userRegisterSchema, updateSubscriptionSchema } from "../../models/User.js";
+import {
+  userLoginSchema,
+  userRegisterSchema,
+  updateSubscriptionSchema,
+} from "../../models/User.js";
 import authController from "../../controllers/auth-controller.js";
 
 const authRouter = express.Router();
@@ -33,6 +38,14 @@ authRouter.patch(
   "/subscription",
   authenticate,
   validateBody(updateSubscriptionSchema),
-  authController.updateSubscription);
+  authController.updateSubscription
+);
+
+authRouter.patch(
+  "/avatars",
+  authenticate,
+  upload.single("avatar"),
+  authController.updateAvatar
+);
 
 export default authRouter;

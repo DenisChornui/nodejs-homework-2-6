@@ -1,7 +1,7 @@
 import express from "express";
 import contactsController from "../../controllers/contacts-controller.js";
 
-import { isEmptyBody, isValidId, authenticate } from "../../middlewares/index.js";
+import { isEmptyBody, isValidId, authenticate, upload } from "../../middlewares/index.js";
 import { validateBody } from "../../decorators/index.js";
 import {
   contactAddSchema,
@@ -17,8 +17,11 @@ contactsRouter.get("/", contactsController.getAllContacts);
 
 contactsRouter.get("/:contactId", isValidId, contactsController.getById);
 
+// upload.fileds([{name: "poster", maxCount: 8}])
+// upload.array("poster", 8)
 contactsRouter.post(
   "/",
+  upload.single("avatarURL"),
   isEmptyBody,
   validateBody(contactAddSchema),
   contactsController.add

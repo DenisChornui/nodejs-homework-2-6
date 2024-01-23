@@ -2,7 +2,7 @@ import { Schema, model } from "mongoose";
 import { addUpdateSettings, handleSaveError } from "./hooks.js";
 import Joi from "joi";
 
-export const subscriptionType = ["starter", "pro", "business"];
+const subscriptionType = ["starter", "pro", "business"];
 
 const userSchema = new Schema(
   {
@@ -21,6 +21,7 @@ const userSchema = new Schema(
       default: "starter",
     },
     token: String,
+    avatarURL: String,
   },
   { versionKey: false, timestamps: true }
 );

@@ -1,11 +1,14 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
+import gravatar from "gravatar";
+import path from "path";
+import fs from "fs/promises";
 import { HttpError } from "../helpers/index.js";
 import { ctrlWrapper } from "../decorators/index.js";
-import { subscriptionType } from "../models/User.js";
 
 const { JWT_SECRET } = process.env;
+const avatarsPath = path.resolve("public", "avatars");
 
 const register = async (req, res) => {
   const { email, password } = req.body;
@@ -15,7 +18,12 @@ const register = async (req, res) => {
   }
 
   const hashPassword = await bcrypt.hash(password, 10);
-  const newUser = await User.create({ ...req.body, password: hashPassword });
+  const avatarURL = gravatar.url(email);
+  const newUser = await User.create({
+    ...req.body,
+    password: hashPassword,
+    avatarURL,
+  });
 
   res.status(201).json({
     user: {
@@ -69,24 +77,6 @@ const logout = async (req, res) => {
   res.status(204).send();
 };
 
-// const updateSubscription = async (req, res) => {
-//   const { _id } = req.user;
-//   try {
-//     const { subscription } = req.body;
-//     if (!subscriptionType.includes(subscription)) {
-//       throw HttpError(400, "Invalid subscription value");
-//     }
-//     const result = await User.findByIdAndUpdate(_id, { subscription });
-//     if (!result) {
-//       throw HttpError(404, "User not found");
-//     }
-//     res.json(result);
-//   } catch (error) {
-//     res.status(500).json({ message: "Server Error" });
-//   }
-// };
-
-
 export async function updateSubscription(req, res) {
   const { id: _id } = req.user;
   const { subscription } = req.body;
@@ -100,6 +90,20 @@ export async function updateSubscription(req, res) {
   } catch (error) {
     next(error);
   }
+}
+
+export async function updateAvatar(req, res) {
+  if (!req.file) {
+    res.status(400).json({ message: "No file uploaded" });
+  }
+  const { id: _id } = req.user;
+  const { path: oldPath, filename } = req.file;
+  const newPath = path.join(avatarsPath, filename);
+  await fs.rename(oldPath, newPath);
+
+  const result = await User.findOneAndUpdate({ _id }, { avatarURL });
+
+  res.json(result);
 }
 export default {
   register: ctrlWrapper(register),
