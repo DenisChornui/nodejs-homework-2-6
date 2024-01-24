@@ -4,6 +4,7 @@ import User from "../models/User.js";
 import gravatar from "gravatar";
 import path from "path";
 import fs from "fs/promises";
+import Jimp from "jimp";
 import { HttpError } from "../helpers/index.js";
 import { ctrlWrapper } from "../decorators/index.js";
 
@@ -96,14 +97,24 @@ export async function updateAvatar(req, res) {
   if (!req.file) {
     res.status(400).json({ message: "No file uploaded" });
   }
-  const { id: _id } = req.user;
+  const { _id } = req.user;
   const { path: oldPath, filename } = req.file;
-  const newPath = path.join(avatarsPath, filename);
-  await fs.rename(oldPath, newPath);
+  const resultUpload = path.join(avatarsPath, filename);
+  await fs.rename(oldPath, resultUpload);
+  const avatarURL = path.join("avatars", filename);
+  await User.findByIdAndUpdate(_id, { avatarURL });
 
-  const result = await User.findOneAndUpdate({ _id }, { avatarURL });
+  await Jimp.read(resultUpload)
+    .then((image) => {
+      return image.resize(250, 250).writeAsync(resultUpload);
+    })
+    .catch((error) => {
+      HttpError(404, error.message);
+    });
 
-  res.json(result);
+  res.json({
+    avatarURL,
+  });
 }
 export default {
   register: ctrlWrapper(register),
@@ -111,4 +122,5 @@ export default {
   getCurrent: ctrlWrapper(getCurrent),
   logout: ctrlWrapper(logout),
   updateSubscription: ctrlWrapper(updateSubscription),
+  updateAvatar: ctrlWrapper(updateAvatar),
 };

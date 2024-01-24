@@ -22,10 +22,6 @@ const contactSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "user",
     },
-    avatarURL: {
-      type: String,
-      required: true,
-    }
   },
   { versionKey: false, timestamps: true }
 );
