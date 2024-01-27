@@ -9,6 +9,7 @@ import {
 import { validateBody } from "../../decorators/index.js";
 import {
   userLoginSchema,
+  userEmailSchema,
   userRegisterSchema,
   updateSubscriptionSchema,
 } from "../../models/User.js";
@@ -22,6 +23,10 @@ authRouter.post(
   validateBody(userRegisterSchema),
   authController.register
 );
+
+authRouter.get("/verify/:verificationToken", authController.verify);
+
+authRouter.post("/verify", validateBody(userEmailSchema), authController.resendVerifyEmail);
 
 authRouter.post(
   "/login",
